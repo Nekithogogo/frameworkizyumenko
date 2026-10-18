@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+
+{% block title %}
+    {% if domain %}
+        {{ domain.name }} – CertHub
+    {% else %}
+        Домен не найден – CertHub
+    {% endif %}
+{% endblock %}
+
+{% block content %}
+    {% if domain %}
+        {% include "domains/includes/domain_card.html" with is_detail_page=True %}
+
+        <h2 class="h5">Владелец</h2>
+        <p>
+            {{ domain.organization.name }}, ИНН {{ domain.organization.inn }},
+            {{ domain.organization.email|default:"e-mail не указан" }}
+        </p>
+
+        <h2 class="h4">Сертификаты домена ({{ history|length }})</h2>
+        <div class="list-group">
+            {% for row in history %}
+                <a
+                    href="{% url 'certificates:detail' row.certificate.id %}"
+                    class="list-group-item list-group-item-action
+                           d-flex justify-content-between align-items-center"
+                >
+                    <span>
+                        <span class="serial-number">{{ row.certificate.serial_number }}</span>
+                        ({{ row.certificate.cert_type }}),
+                        {{ row.certificate.validity.valid_from|date:"d.m.Y" }} –
+                        {{ row.certificate.validity.valid_to|date:"d.m.Y" }}
+                    </span>
+                    {% include "certificates/includes/certificate_status.html" %}
+                </a>
+            {% empty %}
+                <p class="list-group-item mb-0">Сертификаты не выпускались.</p>
+            {% endfor %}
+        </div>
+    {% else %}
+        <h1 class="text-danger">Домен не найден</h1>
+        <p>Домен с указанным идентификатором отсутствует.</p>
+    {% endif %}
+    <a
+        href="{% url 'domains:list' %}"
+        class="btn btn-outline-secondary mt-3"
+    >
+        ← к списку доменов
+    </a>
+{% endblock %}

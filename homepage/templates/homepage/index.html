@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+
+{% block title %}
+    Главная – CertHub
+{% endblock %}
+
+{% block content %}
+    <h1 class="display-5">CertHub</h1>
+    <p class="lead">Сервис управления SSL-сертификатами.</p>
+    <p>
+        Учет организаций, их доменов и SSL-сертификатов: какой домен чем
+        защищен, когда истекает срок действия и что пора продлить.
+    </p>
+
+    <div class="row g-3 mb-4">
+        <div class="col-sm-4">
+            <div class="ch-stat">
+                <div class="ch-stat-value">{{ organizations|length }}</div>
+                организаций
+            </div>
+        </div>
+        <div class="col-sm-4">
+            <div class="ch-stat">
+                <div class="ch-stat-value">{{ domains|length }}</div>
+                доменов
+            </div>
+        </div>
+        <div class="col-sm-4">
+            <div class="ch-stat ch-stat-warning">
+                <div class="ch-stat-value">{{ expiring|length }}</div>
+                сертификатов требуют продления
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4 mb-4">
+        <div class="col-md-6">
+            <h2 class="h5">
+                Сертификаты по статусам (всего {{ certificates|length }})
+            </h2>
+            <ul class="list-group">
+                {% for item in status_counts %}
+                    <li class="list-group-item d-flex justify-content-between">
+                        {{ item.title }}
+                        <span class="badge bg-dark">{{ item.count }}</span>
+                    </li>
+                {% endfor %}
+            </ul>
+        </div>
+        <div class="col-md-6">
+            <h2 class="h5">Требуют продления</h2>
+            <ul class="list-group">
+                {% for row in expiring %}
+                    <li class="list-group-item d-flex justify-content-between">
+                        <a href="{% url 'certificates:detail' row.certificate.id %}">
+                            {{ row.certificate.domain.name }}
+                        </a>
+                        <span>осталось дней: {{ row.days_left }}</span>
+                    </li>
+                {% empty %}
+                    <li class="list-group-item">Таких сертификатов нет.</li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+
+    <p>Основные разделы:</p>
+    <a href="{% url 'domains:list' %}" class="btn btn-primary me-2">
+        Домены
+    </a>
+    <a href="{% url 'certificates:list' %}" class="btn btn-secondary">
+        Сертификаты
+    </a>
+{% endblock %}

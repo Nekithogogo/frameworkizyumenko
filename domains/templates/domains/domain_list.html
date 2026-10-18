@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+
+{% block title %}
+    Домены – CertHub
+{% endblock %}
+
+{% block content %}
+    <h1>Домены</h1>
+    <p>Всего доменов: {{ domain_rows|length }}</p>
+    {% for item in domain_rows %}
+        {% include "domains/includes/domain_card.html" %}
+    {% empty %}
+        <p>Домены не найдены.</p>
+    {% endfor %}
+{% endblock %}

@@ -56,3 +56,17 @@ def test_custom_404_page(client):
         response = client.get("/nonexistent/")
     assert response.status_code == 404
     assert "страница не найдена" in response.content.decode()
+
+
+def test_pages_use_base_template_and_static(client):
+    content = client.get("/certificates/").content.decode()
+    assert "/static/homepage/css/style.css" in content
+    assert "/static/homepage/img/logo.png" in content
+    assert "/static/homepage/js/main.js" in content
+    assert 'href="/domains/"' in content
+
+
+def test_home_page_shows_status_summary(client):
+    content = client.get("/").content.decode()
+    assert "Сертификаты по статусам" in content
+    assert "Требуют продления" in content

@@ -1,0 +1,122 @@
+/* Собственные стили CertHub (поверх Bootstrap) */
+
+body {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    background-color: #f3f6f5;
+}
+
+main {
+    flex: 1;
+}
+
+/* Шапка, логотип и навигация */
+
+.ch-header {
+    background-color: #0f2e24;
+    padding: 0.5rem 0;
+}
+
+.ch-brand {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: #fff;
+    font-size: 1.25rem;
+    font-weight: 700;
+    text-decoration: none;
+}
+
+.ch-brand:hover {
+    color: #a3e4cc;
+}
+
+.ch-logo {
+    width: 40px;
+    height: auto;
+}
+
+.ch-nav .nav-link {
+    color: #a3c9bb;
+}
+
+.ch-nav .nav-link:hover,
+.ch-nav .nav-link.active {
+    color: #fff;
+    border-bottom: 2px solid #20c997;
+}
+
+.ch-footer {
+    margin-top: 2rem;
+    padding: 1rem 0;
+    color: #6c757d;
+    border-top: 1px solid #dee2e6;
+}
+
+/* Сводка на главной */
+
+.ch-stat {
+    padding: 1rem;
+    border-radius: 8px;
+    background-color: #fff;
+    border-left: 4px solid #20c997;
+}
+
+.ch-stat-value {
+    font-size: 2rem;
+    font-weight: 700;
+}
+
+.ch-stat-warning {
+    border-left-color: #ffc107;
+}
+
+/* Карточка домена */
+
+.domain-card {
+    margin-bottom: 1rem;
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+}
+
+.domain-card:hover {
+    box-shadow: 0 0.25rem 0.75rem rgba(0, 0, 0, 0.08);
+}
+
+.domain-name {
+    font-family: monospace;
+    font-size: 1.1rem;
+}
+
+.domain-owner {
+    color: #6c757d;
+    font-size: 0.9rem;
+}
+
+/* Статус сертификата */
+
+.certificate-status {
+    font-weight: 600;
+    letter-spacing: 0.02em;
+}
+
+.certificate-status-expiring {
+    animation: ch-pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes ch-pulse {
+    50% {
+        opacity: 0.6;
+    }
+}
+
+.serial-number {
+    font-family: monospace;
+}
+
+.days-left {
+    font-size: 2.5rem;
+    font-weight: 700;
+    line-height: 1;
+}

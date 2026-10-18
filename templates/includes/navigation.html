@@ -1,0 +1,16 @@
+{% with section=request.resolver_match.app_name %}
+<nav class="nav ch-nav">
+    <a
+        class="nav-link {% if section == 'homepage' %}active{% endif %}"
+        href="{% url 'homepage:index' %}"
+    >Главная</a>
+    <a
+        class="nav-link {% if section == 'domains' %}active{% endif %}"
+        href="{% url 'domains:list' %}"
+    >Домены</a>
+    <a
+        class="nav-link {% if section == 'certificates' %}active{% endif %}"
+        href="{% url 'certificates:list' %}"
+    >Сертификаты</a>
+</nav>
+{% endwith %}

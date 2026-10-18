@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+
+{% block title %}
+    Сертификаты – CertHub
+{% endblock %}
+
+{% block content %}
+    <h1>Сертификаты</h1>
+    <div class="d-flex flex-wrap justify-content-between gap-2 mb-3">
+        <p class="mb-0">Всего сертификатов: {{ rows|length }}</p>
+        <input
+            type="search"
+            id="certificate-filter"
+            class="form-control w-auto"
+            placeholder="Фильтр: домен, организация, статус"
+        >
+    </div>
+    <div class="table-responsive">
+        <table class="table table-hover align-middle bg-white">
+            <thead>
+                <tr>
+                    <th>Серийный номер</th>
+                    <th>Тип</th>
+                    <th>Домен</th>
+                    <th>Организация</th>
+                    <th>Срок действия</th>
+                    <th>Статус</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for row in rows %}
+                    {% with certificate=row.certificate %}
+                        <tr data-filter-row>
+                            <td>
+                                <a
+                                    href="{% url 'certificates:detail' certificate.id %}"
+                                    class="serial-number"
+                                >{{ certificate.serial_number|upper }}</a>
+                            </td>
+                            <td>{{ certificate.cert_type }}</td>
+                            <td>
+                                <a href="{% url 'domains:detail' certificate.domain.id %}">
+                                    {{ certificate.domain.name }}
+                                </a>
+                            </td>
+                            <td>{{ certificate.organization.name|default:"—" }}</td>
+                            <td>
+                                {{ certificate.validity.valid_from|date:"d.m.Y" }} –
+                                {{ certificate.validity.valid_to|date:"d.m.Y" }}
+                            </td>
+                            <td>
+                                {% include "certificates/includes/certificate_status.html" %}
+                            </td>
+                        </tr>
+                    {% endwith %}
+                {% empty %}
+                    <tr>
+                        <td colspan="6">Сертификаты не найдены.</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+{% endblock %}

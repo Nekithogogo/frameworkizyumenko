@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+
+{% block title %}
+    {% if certificate %}
+        Сертификат {{ certificate.serial_number }} – CertHub
+    {% else %}
+        Сертификат не найден – CertHub
+    {% endif %}
+{% endblock %}
+
+{% block content %}
+    {% if certificate %}
+        <div class="card mb-3">
+            <div class="card-body d-flex flex-wrap justify-content-between gap-3">
+                <div>
+                    <h1 class="card-title h3">
+                        Сертификат
+                        <span class="serial-number">{{ certificate.serial_number|upper }}</span>
+                    </h1>
+                    <p class="card-text">
+                        <strong>Тип:</strong> {{ cert_type_title }}
+                    </p>
+                    <p class="card-text">
+                        <strong>Домен:</strong>
+                        <a href="{% url 'domains:detail' certificate.domain.id %}"
+                        >{{ certificate.domain.name }}</a>
+                    </p>
+                    <p class="card-text">
+                        <strong>Организация:</strong>
+                        {{ certificate.organization.name }},
+                        ИНН {{ certificate.organization.inn }}
+                    </p>
+                    <p class="card-text">
+                        <strong>Срок действия:</strong>
+                        {{ certificate.validity.valid_from|date:"d.m.Y" }} –
+                        {{ certificate.validity.valid_to|date:"d.m.Y" }}
+                        ({{ certificate.validity.days_total }} дн.)
+                    </p>
+                    <p class="card-text">
+                        <strong>Отозван:</strong>
+                        {{ certificate.is_revoked|yesno:"да,нет" }}
+                    </p>
+                    <p class="card-text">
+                        <strong>Статус:</strong>
+                        {% include "certificates/includes/certificate_status.html" %}
+                    </p>
+                </div>
+                <div class="text-center">
+                    <div class="days-left">{{ row.days_left }}</div>
+                    дней до окончания
+                </div>
+            </div>
+        </div>
+    {% else %}
+        <h1 class="text-danger">Сертификат не найден</h1>
+        <p>Сертификат с указанным идентификатором отсутствует.</p>
+    {% endif %}
+    <a
+        href="{% url 'certificates:list' %}"
+        class="btn btn-outline-secondary mt-3"
+    >
+        ← к списку сертификатов
+    </a>
+{% endblock %}
