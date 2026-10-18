@@ -1,0 +1,19 @@
+# Виртуальное окружение
+venv/
+.venv/
+
+# Кэш Python и инструментов
+__pycache__/
+*.py[cod]
+.pytest_cache/
+
+# Django
+db.sqlite3
+staticfiles/
+
+# IDE
+.idea/
+.vscode/
+
+# Локальные настройки Claude Code
+.claude/
