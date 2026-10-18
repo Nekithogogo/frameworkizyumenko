@@ -1,206 +1,254 @@
 """CertHub — консольное приложение управления SSL-сертификатами.
 
-Точка запуска программы: меню и вызов функций проекта.
-Каждый пункт меню — функция с общей сигнатурой (domains, certificates).
-Текст пункта меню берется из документации функции (интроспекция).
+Точка запуска программы: меню и пользовательские сценарии.
+Каждый пункт меню — функция с общей сигнатурой (organizations, domains,
+certificates). Текст пункта меню берется из документации функции.
 """
 import os
 from datetime import date
-from typing import Callable
+from typing import Callable, List, Optional
 
-from certificates import (
+from models import Certificate, Domain, Organization
+from models.certificates import (
     CERTIFICATE_TYPES,
-    MAX_VALIDITY_DAYS,
-    STATUSES,
+    find_certificate_by_id,
     get_certificate_status,
-    get_days_left,
+    get_current_certificate,
     get_domain_certificates,
     get_expiring_certificates,
-    get_period,
-    get_status,
     issue_certificate,
     renew_certificate,
     revoke_certificate,
+    show_certificates,
     sort_certificates_by_expiry,
 )
-from domains import (
+from models.domains import (
     add_domain,
     filter_domains_by_zone,
     find_domain,
     find_domain_by_name,
-    get_domains_by_owner,
+    show_domains,
     sort_domains,
 )
-from storage import (
-    load_certificates,
-    load_domains,
-    save_certificates,
-    save_domains,
+from models.organizations import (
+    add_organization,
+    find_organization_by_id,
+    show_organizations,
 )
-from utils import format_date, input_choice, input_date, input_int, input_text
+from models.validity import MAX_VALIDITY_DAYS
+from storage import load_data, save_data
+from utils import input_choice, input_date, input_int, input_text
 
 DATA_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data")
-DOMAINS_FILE = os.path.join(DATA_DIR, "domains.json")
-CERTIFICATES_FILE = os.path.join(DATA_DIR, "certificates.json")
 
-Action = Callable[[dict[int, dict], list[dict]], None]
-
-
-def save_all(domains: dict[int, dict], certificates: list[dict]) -> None:
-    """Сохранить все данные проекта в JSON-файлы."""
-    save_domains(DOMAINS_FILE, domains)
-    save_certificates(CERTIFICATES_FILE, certificates)
+Action = Callable[[List[Organization], List[Domain], List[Certificate]],
+                  None]
 
 
-def print_domains(domains: list[dict]) -> None:
-    """Вывести таблицу доменов."""
-    if not domains:
-        print("Домены не найдены")
-        return
-    for domain in domains:
-        print(f"{domain['id']:>3}  {domain['name']:<22}{domain['owner']}")
+def select_organization(
+    organizations: List[Organization],
+) -> Organization:
+    """Предложить выбрать организацию из списка."""
+    options = {item.id: item.name for item in organizations}
+    organization = find_organization_by_id(
+        organizations, input_choice("Организация: ", options)
+    )
+    assert organization is not None
+    return organization
 
 
-def print_certificates(
-    certificates: list[dict],
-    domains: dict[int, dict],
+def select_domain(domains: List[Domain]) -> Optional[Domain]:
+    """Запросить доменное имя и найти домен; сообщить, если его нет."""
+    domain = find_domain_by_name(domains, input_text("Доменное имя: "))
+    if domain is None:
+        print("Домен не найден")
+    return domain
+
+
+def print_organizations(
+    organizations: List[Organization],
+    domains: List[Domain],
+    certificates: List[Certificate],
 ) -> None:
-    """Вывести список сертификатов со сроком и статусом."""
-    if not certificates:
-        print("Сертификаты не найдены")
-        return
-    today = date.today()
-    for certificate in certificates:
-        domain = domains.get(certificate["domain_id"])
-        name = domain["name"] if domain else "?"
-        print(f"[{certificate['id']}] {certificate['serial_number']} "
-              f"{certificate['cert_type']} {name:<20} "
-              f"{format_date(certificate['valid_from'])} – "
-              f"{format_date(certificate['valid_to'])}  "
-              f"{STATUSES[get_status(certificate, today)]}")
+    """Показать организации"""
+    show_organizations(organizations)
 
 
-def show_domains(domains: dict[int, dict], certificates: list[dict]) -> None:
-    """Показать домены"""
-    print_domains(sort_domains(domains))
-
-
-def search_domains(domains: dict[int, dict], certificates: list[dict]) -> None:
-    """Найти домен по имени"""
-    print_domains(find_domain(domains, input_text("Часть имени домена: ")))
-
-
-def select_domains(domains: dict[int, dict], certificates: list[dict]) -> None:
-    """Отобрать домены по зоне или организации"""
-    query = input_text("Зона (ru, com) или название организации: ")
-    found = list(filter_domains_by_zone(domains, query))
-    print_domains(found or get_domains_by_owner(domains, query))
-
-
-def create_domain(domains: dict[int, dict], certificates: list[dict]) -> None:
-    """Добавить домен"""
-    name = input_text("Доменное имя: ")
-    owner = input_text("Организация-владелец: ")
+def create_organization(
+    organizations: List[Organization],
+    domains: List[Domain],
+    certificates: List[Certificate],
+) -> None:
+    """Добавить организацию"""
+    name = input_text("Название: ")
+    inn = input_text("ИНН (10 или 12 цифр): ")
+    email = input_text("E-mail для уведомлений: ")
     try:
-        domain = add_domain(domains, name, owner)
+        organization = add_organization(organizations, name, inn, email)
     except ValueError as error:
         print(error)
         return
-    save_all(domains, certificates)
-    print(f"Домен добавлен, ID {domain['id']}")
+    save_data(DATA_DIR, organizations, domains, certificates)
+    print(f"Организация добавлена: {organization}")
 
 
-def show_certificates(
-    domains: dict[int, dict],
-    certificates: list[dict],
+def print_domains(
+    organizations: List[Organization],
+    domains: List[Domain],
+    certificates: List[Certificate],
+) -> None:
+    """Показать домены"""
+    show_domains(sort_domains(domains))
+
+
+def search_domains(
+    organizations: List[Organization],
+    domains: List[Domain],
+    certificates: List[Certificate],
+) -> None:
+    """Найти домен по имени"""
+    show_domains(find_domain(domains, input_text("Часть имени домена: ")))
+
+
+def select_domains(
+    organizations: List[Organization],
+    domains: List[Domain],
+    certificates: List[Certificate],
+) -> None:
+    """Отобрать домены по зоне"""
+    zone = input_text("Доменная зона (ru, com, ...): ")
+    show_domains(list(filter_domains_by_zone(domains, zone)))
+
+
+def create_domain(
+    organizations: List[Organization],
+    domains: List[Domain],
+    certificates: List[Certificate],
+) -> None:
+    """Добавить домен"""
+    name = input_text("Доменное имя: ")
+    organization = select_organization(organizations)
+    try:
+        domain = add_domain(domains, name, organization)
+    except ValueError as error:
+        print(error)
+        return
+    save_data(DATA_DIR, organizations, domains, certificates)
+    print(f"Домен добавлен: {domain}")
+
+
+def print_certificates(
+    organizations: List[Organization],
+    domains: List[Domain],
+    certificates: List[Certificate],
 ) -> None:
     """Показать сертификаты"""
-    print_certificates(sort_certificates_by_expiry(certificates), domains)
+    show_certificates(sort_certificates_by_expiry(certificates), date.today())
 
 
-def check_domain(domains: dict[int, dict], certificates: list[dict]) -> None:
-    """Проверить срок действия сертификата домена"""
-    domain = find_domain_by_name(domains, input_text("Доменное имя: "))
+def check_domain(
+    organizations: List[Organization],
+    domains: List[Domain],
+    certificates: List[Certificate],
+) -> None:
+    """Проверить сертификаты домена"""
+    domain = select_domain(domains)
     if domain is None:
-        print("Домен не найден")
         return
     today = date.today()
-    current = [
-        c for c in get_domain_certificates(certificates, domain["id"])
-        if get_status(c, today) in ("active", "expiring", "expired")
-    ]
-    if not current:
+    print(domain)
+    show_certificates(get_domain_certificates(certificates, domain), today)
+    current = get_current_certificate(certificates, domain, today)
+    if current is None:
         print("У домена нет действующих сертификатов")
         return
-    latest = max(current, key=lambda c: c["valid_to"])
-    _, valid_to = get_period(latest)
-    days_left = get_days_left(valid_to, today)
-    print(f"Сертификат {latest['serial_number']} до "
-          f"{valid_to.strftime('%d.%m.%Y')}, осталось дней: {days_left}")
+    days_left = current.days_left(today)
+    print(f"Текущий сертификат {current.serial_number}, "
+          f"осталось дней: {days_left}")
     print(get_certificate_status(days_left))
 
 
-def issue(domains: dict[int, dict], certificates: list[dict]) -> None:
+def issue(
+    organizations: List[Organization],
+    domains: List[Domain],
+    certificates: List[Certificate],
+) -> None:
     """Выпустить сертификат"""
-    domain = find_domain_by_name(domains, input_text("Доменное имя: "))
+    domain = select_domain(domains)
     if domain is None:
-        print("Домен не найден")
         return
+    organization = select_organization(organizations)
     cert_type = input_choice("Тип сертификата: ", CERTIFICATE_TYPES)
     valid_from = input_date("Начало действия ДД.ММ.ГГГГ (Enter — сегодня): ")
     days = input_int(f"Срок в днях (до {MAX_VALIDITY_DAYS}, Enter — 365): ",
                      min_value=1, default=365)
     try:
-        certificate = issue_certificate(domains, certificates, domain["id"],
+        certificate = issue_certificate(certificates, domain, organization,
                                         cert_type, valid_from, days)
     except ValueError as error:
         print(f"Сертификат не выпущен: {error}")
         return
-    save_all(domains, certificates)
-    print(f"Выпущен сертификат {certificate['serial_number']}")
+    save_data(DATA_DIR, organizations, domains, certificates)
+    print(f"Выпущен сертификат: {certificate}")
 
 
-def renew(domains: dict[int, dict], certificates: list[dict]) -> None:
+def renew(
+    organizations: List[Organization],
+    domains: List[Domain],
+    certificates: List[Certificate],
+) -> None:
     """Продлить сертификат"""
-    certificate_id = input_int("ID сертификата: ")
+    old = find_certificate_by_id(certificates, input_int("ID сертификата: "))
+    if old is None:
+        print("Сертификат не найден")
+        return
     days = input_int("Срок в днях (Enter — 365): ", min_value=1, default=365)
     try:
-        certificate = renew_certificate(domains, certificates,
-                                        certificate_id, days)
+        certificate = renew_certificate(certificates, old, days)
     except ValueError as error:
         print(f"Сертификат не продлен: {error}")
         return
-    save_all(domains, certificates)
-    print(f"Выпущен новый сертификат {certificate['serial_number']} "
-          f"с {format_date(certificate['valid_from'])}")
+    save_data(DATA_DIR, organizations, domains, certificates)
+    print(f"Выпущен новый сертификат: {certificate}")
 
 
-def revoke(domains: dict[int, dict], certificates: list[dict]) -> None:
+def revoke(
+    organizations: List[Organization],
+    domains: List[Domain],
+    certificates: List[Certificate],
+) -> None:
     """Отозвать сертификат"""
     if revoke_certificate(certificates, input_int("ID сертификата: ")):
-        save_all(domains, certificates)
+        save_data(DATA_DIR, organizations, domains, certificates)
         print("Сертификат отозван")
     else:
         print("Сертификат не найден или уже отозван")
 
 
-def show_expiring(domains: dict[int, dict], certificates: list[dict]) -> None:
+def print_expiring(
+    organizations: List[Organization],
+    domains: List[Domain],
+    certificates: List[Certificate],
+) -> None:
     """Показать сертификаты, требующие продления"""
-    expiring = list(get_expiring_certificates(certificates, date.today()))
-    print_certificates(expiring, domains)
+    today = date.today()
+    show_certificates(list(get_expiring_certificates(certificates, today)),
+                      today)
 
 
 ACTIONS: dict[str, Action] = {
-    "1": show_domains,
-    "2": search_domains,
-    "3": select_domains,
-    "4": create_domain,
-    "5": show_certificates,
-    "6": check_domain,
-    "7": issue,
-    "8": renew,
-    "9": revoke,
-    "10": show_expiring,
+    "1": print_organizations,
+    "2": create_organization,
+    "3": print_domains,
+    "4": search_domains,
+    "5": select_domains,
+    "6": create_domain,
+    "7": print_certificates,
+    "8": check_domain,
+    "9": issue,
+    "10": renew,
+    "11": revoke,
+    "12": print_expiring,
 }
 
 
@@ -213,9 +261,8 @@ def print_menu() -> None:
 
 
 def main() -> None:
-    """Точка запуска приложения: загрузка данных и цикл меню."""
-    domains = load_domains(DOMAINS_FILE)
-    certificates = load_certificates(CERTIFICATES_FILE)
+    """Точка запуска: загрузка объектов, цикл меню, сохранение."""
+    organizations, domains, certificates = load_data(DATA_DIR)
     while True:
         print_menu()
         choice = input("Выберите действие: ").strip()
@@ -226,7 +273,8 @@ def main() -> None:
             print("Такого пункта нет")
             continue
         print()
-        action(domains, certificates)
+        action(organizations, domains, certificates)
+    save_data(DATA_DIR, organizations, domains, certificates)
 
 
 if __name__ == "__main__":

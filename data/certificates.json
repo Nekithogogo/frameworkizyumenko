@@ -4,6 +4,7 @@
         "serial_number": "CH-000001",
         "cert_type": "OV",
         "domain_id": 1,
+        "organization_id": 1,
         "valid_from": "2026-03-01",
         "valid_to": "2027-03-01",
         "is_revoked": false
@@ -13,6 +14,7 @@
         "serial_number": "CH-000002",
         "cert_type": "DV",
         "domain_id": 2,
+        "organization_id": 1,
         "valid_from": "2025-11-05",
         "valid_to": "2026-11-05",
         "is_revoked": false
@@ -22,6 +24,7 @@
         "serial_number": "CH-000003",
         "cert_type": "EV",
         "domain_id": 3,
+        "organization_id": 2,
         "valid_from": "2025-06-01",
         "valid_to": "2026-06-01",
         "is_revoked": false
@@ -31,6 +34,7 @@
         "serial_number": "CH-000004",
         "cert_type": "EV",
         "domain_id": 3,
+        "organization_id": 2,
         "valid_from": "2026-06-02",
         "valid_to": "2027-06-02",
         "is_revoked": false
@@ -40,6 +44,7 @@
         "serial_number": "CH-000005",
         "cert_type": "DV",
         "domain_id": 4,
+        "organization_id": 2,
         "valid_from": "2026-02-10",
         "valid_to": "2027-02-10",
         "is_revoked": true
@@ -49,6 +54,7 @@
         "serial_number": "CH-000006",
         "cert_type": "DV",
         "domain_id": 5,
+        "organization_id": 3,
         "valid_from": "2025-09-01",
         "valid_to": "2026-09-01",
         "is_revoked": false

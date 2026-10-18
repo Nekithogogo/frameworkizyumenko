@@ -1,0 +1,20 @@
+[
+    {
+        "id": 1,
+        "name": "ООО «Ромашка»",
+        "inn": "7701234567",
+        "email": "admin@example.ru"
+    },
+    {
+        "id": 2,
+        "name": "АО «Техно»",
+        "inn": "7812345678",
+        "email": "it@techno.com"
+    },
+    {
+        "id": 3,
+        "name": "ИП Иванов И. И.",
+        "inn": "500100732259",
+        "email": "ivanov@ivanov-blog.ru"
+    }
+]

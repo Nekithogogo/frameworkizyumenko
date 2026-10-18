@@ -1,7 +1,27 @@
 [
-    {"id": 1, "name": "example.ru", "owner": "ООО «Ромашка»"},
-    {"id": 2, "name": "shop.example.ru", "owner": "ООО «Ромашка»"},
-    {"id": 3, "name": "api.techno.com", "owner": "АО «Техно»"},
-    {"id": 4, "name": "mail.techno.com", "owner": "АО «Техно»"},
-    {"id": 5, "name": "ivanov-blog.ru", "owner": "ИП Иванов И. И."}
+    {
+        "id": 1,
+        "name": "example.ru",
+        "organization_id": 1
+    },
+    {
+        "id": 2,
+        "name": "shop.example.ru",
+        "organization_id": 1
+    },
+    {
+        "id": 3,
+        "name": "api.techno.com",
+        "organization_id": 2
+    },
+    {
+        "id": 4,
+        "name": "mail.techno.com",
+        "organization_id": 2
+    },
+    {
+        "id": 5,
+        "name": "ivanov-blog.ru",
+        "organization_id": 3
+    }
 ]
