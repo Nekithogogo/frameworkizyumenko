@@ -1,0 +1,116 @@
+{% extends "base.html" %}
+{% load certhub_filters %}
+
+{% block title %}
+    Статистика – CertHub
+{% endblock %}
+
+{% block content %}
+    <h1>Статистика сертификатов</h1>
+    <p>
+        Всего сертификатов: {{ summary.certificates_count }},
+        из них отозвано: {{ summary.revoked_count|default:0 }};
+        средний срок действия: {{ summary.avg_days|floatformat:0 }} дн.
+    </p>
+
+    <div class="row g-4">
+        <div class="col-md-5">
+            <h2 class="h5">По статусам на сегодня</h2>
+            <ul class="list-group">
+                {% for item in status_counts %}
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        {% include "certificates/includes/certificate_status.html" with status=item.status %}
+                        <span class="badge bg-dark">{{ item.certificates_count }}</span>
+                    </li>
+                {% empty %}
+                    <li class="list-group-item">Данные отсутствуют.</li>
+                {% endfor %}
+            </ul>
+        </div>
+        <div class="col-md-7">
+            <h2 class="h5">По типам сертификатов</h2>
+            <div class="table-responsive">
+                <table class="table table-sm bg-white">
+                    <thead>
+                        <tr>
+                            <th>Тип</th>
+                            <th>Количество</th>
+                            <th>Средний срок, дн.</th>
+                            <th>Первый выпуск</th>
+                            <th>Действует до</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in type_statistics %}
+                            <tr>
+                                <td>{{ item.cert_type }}</td>
+                                <td>{{ item.certificates_count }}</td>
+                                <td>{{ item.avg_days|floatformat:0 }}</td>
+                                <td>{{ item.first_issued|ru_date }}</td>
+                                <td>{{ item.last_valid_to|ru_date }}</td>
+                            </tr>
+                        {% empty %}
+                            <tr><td colspan="5">Данные отсутствуют.</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <h2 class="h5 mt-4">По организациям</h2>
+    <div class="table-responsive">
+        <table class="table table-sm bg-white">
+            <thead>
+                <tr>
+                    <th>Организация</th>
+                    <th>ИНН</th>
+                    <th>Доменов</th>
+                    <th>Сертификатов</th>
+                    <th>Действуют сегодня</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in organization_statistics %}
+                    <tr>
+                        <td>{{ item.name }}</td>
+                        <td>{{ item.inn }}</td>
+                        <td>{{ item.domains_count }}</td>
+                        <td>{{ item.certificates_count }}</td>
+                        <td>{{ item.valid_count }}</td>
+                    </tr>
+                {% empty %}
+                    <tr><td colspan="5">Данные отсутствуют.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <h2 class="h5 mt-4">Крупные клиенты</h2>
+    <form method="get" class="d-flex flex-wrap align-items-end gap-2 mb-3">
+        <div>
+            <label for="min_domains" class="form-label">Доменов не меньше</label>
+            <input
+                type="number"
+                id="min_domains"
+                name="min_domains"
+                value="{{ min_domains }}"
+                min="1"
+                class="form-control"
+            >
+        </div>
+        <button type="submit" class="btn btn-primary">Показать</button>
+    </form>
+    <ul class="list-group">
+        {% for item in large_organizations %}
+            <li class="list-group-item d-flex justify-content-between">
+                {{ item.name }}
+                <span>доменов: {{ item.domains_count }}</span>
+            </li>
+        {% empty %}
+            <li class="list-group-item">
+                Нет организаций, у которых не меньше {{ min_domains }} доменов.
+            </li>
+        {% endfor %}
+    </ul>
+{% endblock %}

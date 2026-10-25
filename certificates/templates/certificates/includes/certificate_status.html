@@ -1,13 +1,13 @@
-{% if row.status == "active" %}
-    <span class="badge bg-success certificate-status">{{ row.status_title }}</span>
-{% elif row.status == "expiring" %}
+{% if status == "active" %}
+    <span class="badge bg-success certificate-status">Действует</span>
+{% elif status == "expiring" %}
     <span class="badge bg-warning text-dark certificate-status certificate-status-expiring">
-        {{ row.status_title }}
+        Скоро истекает
     </span>
-{% elif row.status == "expired" %}
-    <span class="badge bg-danger certificate-status">{{ row.status_title }}</span>
-{% elif row.status == "revoked" %}
-    <span class="badge bg-secondary certificate-status">{{ row.status_title }}</span>
+{% elif status == "expired" %}
+    <span class="badge bg-danger certificate-status">Истек</span>
+{% elif status == "revoked" %}
+    <span class="badge bg-secondary certificate-status">Отозван</span>
 {% else %}
-    <span class="badge bg-info text-dark certificate-status">{{ row.status_title }}</span>
+    <span class="badge bg-info text-dark certificate-status">Еще не действует</span>
 {% endif %}

@@ -5,9 +5,14 @@
 {% endblock %}
 
 {% block content %}
-    <h1>Домены</h1>
-    <p>Всего доменов: {{ domain_rows|length }}</p>
-    {% for item in domain_rows %}
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+        <h1 class="mb-0">Домены</h1>
+        <a href="{% url 'domains:unprotected' %}" class="btn btn-outline-danger">
+            Найти незащищенные домены
+        </a>
+    </div>
+    <p>Всего доменов: {{ domains|length }}</p>
+    {% for domain in domains %}
         {% include "domains/includes/domain_card.html" %}
     {% empty %}
         <p>Домены не найдены.</p>

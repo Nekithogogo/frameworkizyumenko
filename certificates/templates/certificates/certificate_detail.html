@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% load certhub_filters %}
 
 {% block title %}
     {% if certificate %}
@@ -22,19 +23,19 @@
                     </p>
                     <p class="card-text">
                         <strong>Домен:</strong>
-                        <a href="{% url 'domains:detail' certificate.domain.id %}"
-                        >{{ certificate.domain.name }}</a>
+                        <a href="{% url 'domains:detail' certificate.domain_id %}"
+                        >{{ certificate.domain_name }}</a>
                     </p>
                     <p class="card-text">
                         <strong>Организация:</strong>
-                        {{ certificate.organization.name }},
-                        ИНН {{ certificate.organization.inn }}
+                        {{ certificate.organization_name }},
+                        ИНН {{ certificate.inn }}, {{ certificate.email }}
                     </p>
                     <p class="card-text">
                         <strong>Срок действия:</strong>
-                        {{ certificate.validity.valid_from|date:"d.m.Y" }} –
-                        {{ certificate.validity.valid_to|date:"d.m.Y" }}
-                        ({{ certificate.validity.days_total }} дн.)
+                        {{ certificate.valid_from|ru_date }} –
+                        {{ certificate.valid_to|ru_date }}
+                        ({{ certificate.days_total }} дн.)
                     </p>
                     <p class="card-text">
                         <strong>Отозван:</strong>
@@ -42,13 +43,15 @@
                     </p>
                     <p class="card-text">
                         <strong>Статус:</strong>
-                        {% include "certificates/includes/certificate_status.html" %}
+                        {% include "certificates/includes/certificate_status.html" with status=certificate.status %}
                     </p>
                 </div>
-                <div class="text-center">
-                    <div class="days-left">{{ row.days_left }}</div>
-                    дней до окончания
-                </div>
+                {% if certificate.days_left >= 0 and not certificate.is_revoked %}
+                    <div class="text-center">
+                        <div class="days-left">{{ certificate.days_left }}</div>
+                        дней до окончания
+                    </div>
+                {% endif %}
             </div>
         </div>
     {% else %}

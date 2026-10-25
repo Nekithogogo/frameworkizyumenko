@@ -1,33 +1,32 @@
+{% load certhub_filters %}
 <article class="card domain-card">
     <div class="card-body">
         <div class="d-flex justify-content-between align-items-start gap-2">
             <div>
                 <h2 class="h5 card-title mb-0 domain-name">
-                    {{ item.domain.name|default:"Без названия" }}
+                    {{ domain.name|default:"Без названия" }}
                 </h2>
                 <span class="domain-owner">
-                    {{ item.domain.organization.name|default:"владелец не указан" }},
-                    зона .{{ item.domain.zone|upper }}
+                    {{ domain.organization_name|default:"владелец не указан" }}
                 </span>
             </div>
-            {% if item.row %}
-                {% include "certificates/includes/certificate_status.html" with row=item.row %}
+            {% if domain.protected_until %}
+                <span class="badge bg-success">защищен</span>
             {% else %}
-                <span class="badge bg-secondary">нет сертификата</span>
+                <span class="badge bg-danger">не защищен</span>
             {% endif %}
         </div>
         <p class="card-text mt-2">
-            {% if item.is_protected %}
-                Защищен сертификатом {{ item.row.certificate.serial_number }}
-                до {{ item.row.certificate.validity.valid_to|date:"d.m.Y" }}
-                (осталось дней: {{ item.row.days_left }})
+            {% if domain.protected_until %}
+                Действующий сертификат до {{ domain.protected_until|ru_date }}
             {% else %}
-                Домен не защищен действующим сертификатом
+                Нет действующего сертификата на сегодня
             {% endif %}
+            · сертификатов всего: {{ domain.certificates_count }}
         </p>
         {% if not is_detail_page %}
             <a
-                href="{% url 'domains:detail' item.domain.id %}"
+                href="{% url 'domains:detail' domain.id %}"
                 class="btn btn-primary btn-sm"
             >
                 Подробнее

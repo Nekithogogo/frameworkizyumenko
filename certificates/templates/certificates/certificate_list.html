@@ -1,13 +1,19 @@
 {% extends "base.html" %}
+{% load certhub_filters %}
 
 {% block title %}
     Сертификаты – CertHub
 {% endblock %}
 
 {% block content %}
-    <h1>Сертификаты</h1>
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+        <h1 class="mb-0">Сертификаты</h1>
+        <a href="{% url 'certificates:expiring' %}" class="btn btn-outline-warning">
+            Требуют продления
+        </a>
+    </div>
     <div class="d-flex flex-wrap justify-content-between gap-2 mb-3">
-        <p class="mb-0">Всего сертификатов: {{ rows|length }}</p>
+        <p class="mb-0">Всего сертификатов: {{ certificates|length }}</p>
         <input
             type="search"
             id="certificate-filter"
@@ -28,31 +34,29 @@
                 </tr>
             </thead>
             <tbody>
-                {% for row in rows %}
-                    {% with certificate=row.certificate %}
-                        <tr data-filter-row>
-                            <td>
-                                <a
-                                    href="{% url 'certificates:detail' certificate.id %}"
-                                    class="serial-number"
-                                >{{ certificate.serial_number|upper }}</a>
-                            </td>
-                            <td>{{ certificate.cert_type }}</td>
-                            <td>
-                                <a href="{% url 'domains:detail' certificate.domain.id %}">
-                                    {{ certificate.domain.name }}
-                                </a>
-                            </td>
-                            <td>{{ certificate.organization.name|default:"—" }}</td>
-                            <td>
-                                {{ certificate.validity.valid_from|date:"d.m.Y" }} –
-                                {{ certificate.validity.valid_to|date:"d.m.Y" }}
-                            </td>
-                            <td>
-                                {% include "certificates/includes/certificate_status.html" %}
-                            </td>
-                        </tr>
-                    {% endwith %}
+                {% for certificate in certificates %}
+                    <tr data-filter-row>
+                        <td>
+                            <a
+                                href="{% url 'certificates:detail' certificate.id %}"
+                                class="serial-number"
+                            >{{ certificate.serial_number|upper }}</a>
+                        </td>
+                        <td>{{ certificate.cert_type }}</td>
+                        <td>
+                            <a href="{% url 'domains:detail' certificate.domain_id %}">
+                                {{ certificate.domain_name }}
+                            </a>
+                        </td>
+                        <td>{{ certificate.organization_name|default:"—" }}</td>
+                        <td>
+                            {{ certificate.valid_from|ru_date }} –
+                            {{ certificate.valid_to|ru_date }}
+                        </td>
+                        <td>
+                            {% include "certificates/includes/certificate_status.html" with status=certificate.status %}
+                        </td>
+                    </tr>
                 {% empty %}
                     <tr>
                         <td colspan="6">Сертификаты не найдены.</td>

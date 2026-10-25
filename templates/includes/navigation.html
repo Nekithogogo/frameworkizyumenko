@@ -1,4 +1,4 @@
-{% with section=request.resolver_match.app_name %}
+{% with section=request.resolver_match.app_name page=request.resolver_match.url_name %}
 <nav class="nav ch-nav">
     <a
         class="nav-link {% if section == 'homepage' %}active{% endif %}"
@@ -9,8 +9,12 @@
         href="{% url 'domains:list' %}"
     >Домены</a>
     <a
-        class="nav-link {% if section == 'certificates' %}active{% endif %}"
+        class="nav-link {% if section == 'certificates' and page != 'statistics' %}active{% endif %}"
         href="{% url 'certificates:list' %}"
     >Сертификаты</a>
+    <a
+        class="nav-link {% if page == 'statistics' %}active{% endif %}"
+        href="{% url 'certificates:statistics' %}"
+    >Статистика</a>
 </nav>
 {% endwith %}

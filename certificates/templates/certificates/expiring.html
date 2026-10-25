@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+{% load certhub_filters %}
+
+{% block title %}
+    Требуют продления – CertHub
+{% endblock %}
+
+{% block content %}
+    <h1>Сертификаты, требующие продления</h1>
+    <form method="get" class="d-flex flex-wrap align-items-end gap-2 mb-4">
+        <div>
+            <label for="days" class="form-label">Истекают в ближайшие, дней</label>
+            <input
+                type="number"
+                id="days"
+                name="days"
+                value="{{ days }}"
+                min="1"
+                max="398"
+                class="form-control"
+            >
+        </div>
+        <button type="submit" class="btn btn-primary">Показать</button>
+    </form>
+
+    <h2 class="h5">Найдено сертификатов: {{ certificates|length }}</h2>
+    <div class="list-group">
+        {% for certificate in certificates %}
+            <a
+                href="{% url 'certificates:detail' certificate.id %}"
+                class="list-group-item list-group-item-action
+                       d-flex flex-wrap justify-content-between align-items-center"
+            >
+                <span>
+                    <span class="domain-name">{{ certificate.domain_name }}</span>
+                    <small class="text-muted">
+                        — {{ certificate.organization_name }}, уведомить:
+                        {{ certificate.email }}
+                    </small>
+                </span>
+                <span>
+                    до {{ certificate.valid_to|ru_date }},
+                    осталось дней: <strong>{{ certificate.days_left }}</strong>
+                </span>
+            </a>
+        {% empty %}
+            <p class="list-group-item mb-0">
+                В ближайшие {{ days }} дн. ни один сертификат не истекает.
+            </p>
+        {% endfor %}
+    </div>
+    <a
+        href="{% url 'certificates:list' %}"
+        class="btn btn-outline-secondary mt-3"
+    >
+        ← к списку сертификатов
+    </a>
+{% endblock %}

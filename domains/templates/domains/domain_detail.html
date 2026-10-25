@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% load certhub_filters %}
 
 {% block title %}
     {% if domain %}
@@ -14,25 +15,25 @@
 
         <h2 class="h5">Владелец</h2>
         <p>
-            {{ domain.organization.name }}, ИНН {{ domain.organization.inn }},
-            {{ domain.organization.email|default:"e-mail не указан" }}
+            {{ domain.organization_name }}, ИНН {{ domain.inn }},
+            {{ domain.email|default:"e-mail не указан" }}
         </p>
 
-        <h2 class="h4">Сертификаты домена ({{ history|length }})</h2>
+        <h2 class="h4">Сертификаты домена ({{ certificates|length }})</h2>
         <div class="list-group">
-            {% for row in history %}
+            {% for certificate in certificates %}
                 <a
-                    href="{% url 'certificates:detail' row.certificate.id %}"
+                    href="{% url 'certificates:detail' certificate.id %}"
                     class="list-group-item list-group-item-action
                            d-flex justify-content-between align-items-center"
                 >
                     <span>
-                        <span class="serial-number">{{ row.certificate.serial_number }}</span>
-                        ({{ row.certificate.cert_type }}),
-                        {{ row.certificate.validity.valid_from|date:"d.m.Y" }} –
-                        {{ row.certificate.validity.valid_to|date:"d.m.Y" }}
+                        <span class="serial-number">{{ certificate.serial_number }}</span>
+                        ({{ certificate.cert_type }}),
+                        {{ certificate.valid_from|ru_date }} –
+                        {{ certificate.valid_to|ru_date }}
                     </span>
-                    {% include "certificates/includes/certificate_status.html" %}
+                    {% include "certificates/includes/certificate_status.html" with status=certificate.status %}
                 </a>
             {% empty %}
                 <p class="list-group-item mb-0">Сертификаты не выпускались.</p>

@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+{% load certhub_filters %}
+
+{% block title %}
+    Незащищенные домены – CertHub
+{% endblock %}
+
+{% block content %}
+    <h1>Незащищенные домены</h1>
+    <p>
+        Домены, у которых на выбранную дату нет действующего
+        (неотозванного и не истекшего) сертификата.
+    </p>
+    <form method="get" class="d-flex flex-wrap align-items-end gap-2 mb-4">
+        <div>
+            <label for="date" class="form-label">Дата проверки</label>
+            <input
+                type="date"
+                id="date"
+                name="date"
+                value="{{ check_date }}"
+                class="form-control"
+                required
+            >
+        </div>
+        <button type="submit" class="btn btn-primary">Найти</button>
+    </form>
+
+    {% if error %}
+        <p class="text-danger">{{ error }}</p>
+    {% elif check_date %}
+        <h2 class="h5">
+            На {{ check_date|ru_date }} не защищено доменов: {{ domains|length }}
+        </h2>
+        <div class="list-group">
+            {% for domain in domains %}
+                <a
+                    href="{% url 'domains:detail' domain.id %}"
+                    class="list-group-item list-group-item-action"
+                >
+                    <span class="domain-name">{{ domain.name }}</span>
+                    <small class="text-muted">
+                        — {{ domain.organization_name }}, {{ domain.email }}
+                    </small>
+                </a>
+            {% empty %}
+                <p class="list-group-item mb-0">
+                    Все домены защищены на выбранную дату.
+                </p>
+            {% endfor %}
+        </div>
+    {% endif %}
+    <a
+        href="{% url 'domains:list' %}"
+        class="btn btn-outline-secondary mt-3"
+    >
+        ← к списку доменов
+    </a>
+{% endblock %}
